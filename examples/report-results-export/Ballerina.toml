@@ -1,0 +1,14 @@
+[package]
+org = "ballerinax"
+name = "report_results_export"
+version = "0.1.0"
+distribution = "2201.13.4"
+
+[build-options]
+observabilityIncluded = true
+
+[[dependency]]
+org = "ballerinax"
+name = "ardoq"
+version = "1.0.0"
+repository = "local"
