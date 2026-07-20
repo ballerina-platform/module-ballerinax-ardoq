@@ -20,6 +20,8 @@ To use the Ardoq connector, you must have access to an Ardoq organization and an
 
 ### Step 2: Generate an API token
 
+> Also see Ardoq's own guide on [generating an API token](https://developer.ardoq.com/getting-started/generating_an_api_token/).
+
 1. Click your organization name in the top-left corner and select **Admin** > **Access control**.
 
    <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-ardoq/main/docs/setup/resources/access-control.png alt="Navigate to Access control" style="border:1px solid #000000; width:80%">
@@ -33,6 +35,16 @@ To use the Ardoq connector, you must have access to an Ardoq organization and an
    <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-ardoq/main/docs/setup/resources/generate-token.png alt="Copy the generated API token" style="border:1px solid #000000; width:80%">
 
 > **Note:** Pass the token to the `ardoq:Client` via the `auth` configuration when creating it — the connector attaches it as a bearer token in the `Authorization` header of every request automatically.
+
+### Step 3: Find your organization label (only if not using a custom domain)
+
+If you sign in at `app.ardoq.com` (rather than a dedicated domain like `https://your-org.ardoq.com`), every request must also carry an `X-org` header set to your organization label, since `app.ardoq.com` is shared across organizations. Your organization label is shown on the same **Access control** page used to generate the token above. Pass it through the `headers` parameter that every remote operation accepts:
+
+```ballerina
+ardoq:PaginatedWorkspaceResponse workspaces = check ardoqClient->listWorkspaces({"X-org": orgLabel});
+```
+
+If you're on a dedicated domain, the organization is already implied by the domain itself and the `X-org` header can be omitted. See Ardoq's [concepts guide](https://developer.ardoq.com/getting-started/making_a_simple_request/) for more details.
 
 ## Quickstart
 
