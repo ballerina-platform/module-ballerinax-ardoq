@@ -23,6 +23,9 @@ if "%~1"=="build" (
     exit /b 1
 )
 
+:: Optional GraalVM flag, forwarded from the Gradle build
+set GRAALVM_FLAG=%~2
+
 :: Read Ballerina package name
 for /f "tokens=2 delims== " %%A in ('findstr /r "^name" "%BAL_HOME_DIR%\Ballerina.toml"') do (
     set BAL_PACKAGE_NAME=%%~A
@@ -68,7 +71,7 @@ set ERROR_OCCURRED=0
 for /d %%D in ("%BAL_EXAMPLES_DIR%\*") do (
     if not "%%~nD"=="build" (
         pushd "%%D"
-        call bal %BAL_CMD%
+        call bal %BAL_CMD% %GRAALVM_FLAG%
         if errorlevel 1 (
             set ERROR_OCCURRED=1
         )

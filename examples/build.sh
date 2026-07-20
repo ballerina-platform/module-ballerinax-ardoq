@@ -9,8 +9,8 @@ BAL_CENTRAL_DIR="$HOME/.ballerina/repositories/central.ballerina.io"
 BAL_HOME_DIR="$BAL_EXAMPLES_DIR/../ballerina"
 
 # Validate input command
-if [[ $# -ne 1 ]]; then
-  echo "Usage: $0 <build|run>"
+if [[ $# -lt 1 || $# -gt 2 ]]; then
+  echo "Usage: $0 <build|run> [--graalvm]"
   exit 1
 fi
 
@@ -27,6 +27,9 @@ case "$1" in
     ;;
 esac
 
+# Optional GraalVM flag, forwarded from the Gradle build
+GRAALVM_FLAG="${2:-}"
+
 # Read Ballerina package name from Ballerina.toml
 if [[ ! -f "$BAL_HOME_DIR/Ballerina.toml" ]]; then
   echo "Error: Ballerina.toml not found in $BAL_HOME_DIR"
@@ -42,13 +45,10 @@ bal push --repository=local
 
 # Remove cache directories in the central repository
 echo "Cleaning cache directories in the central repository..."
-cacheDirs=$(find "$BAL_CENTRAL_DIR" -type d -name "cache-*" 2>/dev/null) || true
-for dir in $cacheDirs; do
-  if [[ -d "$dir" ]]; then
-    rm -r "$dir"
-    echo "Removed cache directory: $dir"
-  fi
-done
+while IFS= read -r -d '' dir; do
+  rm -r "$dir"
+  echo "Removed cache directory: $dir"
+done < <(find "$BAL_CENTRAL_DIR" -type d -name "cache-*" -print0 2>/dev/null)
 echo "Successfully cleaned the cache directories."
 
 # Create the package directory in the central repository
@@ -79,7 +79,7 @@ for dir in "$BAL_EXAMPLES_DIR"/*/; do
     continue
   fi
   echo "Processing example: $dir"
-  (cd "$dir" && bal "$BAL_CMD")
+  (cd "$dir" && bal "$BAL_CMD" $GRAALVM_FLAG)
 done
 
 # Remove generated JAR files in the Ballerina home directory

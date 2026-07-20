@@ -32,9 +32,9 @@ task testExamples {
                 workingDir project.projectDir
                 println("Working dir: ${workingDir}")
                 if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                    commandLine 'cmd', "/c", "build.bat run && exit %ERRORLEVEL%"
+                    commandLine 'cmd', "/c", "build.bat run ${graalvmFlag} && exit %ERRORLEVEL%"
                 } else {
-                    commandLine 'sh', "-c", "chmod +x ./build.sh && ./build.sh run"
+                    commandLine 'sh', "-c", "chmod +x ./build.sh && ./build.sh run ${graalvmFlag}"
                 }
             }
         } catch (Exception e) {
