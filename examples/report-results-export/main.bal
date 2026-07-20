@@ -34,17 +34,17 @@ public function main() returns error? {
         return error(string `Report '${reportName}' was not found`);
     }
     ardoq:ReportOverview report = reports.values[0];
-    io:println("Found report: ", report.name, " (", report.id, ")");
+    io:println(string `Found report: ${report.name.toString()} (${report.id})`);
 
     // Step 2: Fetch the report definition and show its columns
     ardoq:ReportOverview definition = check ardoqClient->getReport(report.id);
     string[] columnLabels = from ardoq:Column column in definition.columns
         select column.label;
-    io:println("Columns: ", string:'join(", ", ...columnLabels));
+    io:println(string `Columns: ${string:'join(", ", ...columnLabels)}`);
 
     // Step 3: Run the report and print each result row
     ardoq:PaginatedReportTabularResponse results = check ardoqClient->runReportTabular(report.id);
-    io:println("Rows: ", results.values.length());
+    io:println(string `Rows: ${results.values.length()}`);
     foreach anydata[] row in results.values {
         io:println(row);
     }

@@ -34,7 +34,7 @@ public function main() returns error? {
         return error(string `Workspace '${workspaceName}' was not found`);
     }
     ardoq:Workspace workspace = workspaces.values[0];
-    io:println("Using workspace: ", workspace.name, " (", workspace.id, ")");
+    io:println(string `Using workspace: ${workspace.name.toString()} (${workspace.id})`);
 
     // Step 2: Discover the component and reference types defined by the workspace model
     ardoq:WorkspaceContext context = check ardoqClient->getWorkspaceContext(workspace.id);
@@ -51,7 +51,7 @@ public function main() returns error? {
         typeId: componentTypeId,
         description: "Handles customer payment processing"
     });
-    io:println("Created component: ", paymentService.name, " (", paymentService.id, ")");
+    io:println(string `Created component: ${paymentService.name.toString()} (${paymentService.id})`);
 
     ardoq:Component ledgerService = check ardoqClient->createComponent({
         name: "Ledger Service",
@@ -59,7 +59,7 @@ public function main() returns error? {
         typeId: componentTypeId,
         description: "Maintains the financial ledger"
     });
-    io:println("Created component: ", ledgerService.name, " (", ledgerService.id, ")");
+    io:println(string `Created component: ${ledgerService.name.toString()} (${ledgerService.id})`);
 
     // Step 4: Link them with a dependency reference
     ardoq:Reference dependency = check ardoqClient->createReference({
@@ -68,5 +68,5 @@ public function main() returns error? {
         target: ledgerService.id,
         'type: referenceTypeId
     });
-    io:println("Created reference: ", dependency.id, " (", paymentService.name, " -> ", ledgerService.name, ")");
+    io:println(string `Created reference: ${dependency.id} (${paymentService.name.toString()} -> ${ledgerService.name.toString()})`);
 }

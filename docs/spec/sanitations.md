@@ -328,4 +328,4 @@ The following command was used to generate the Ballerina client from the OpenAPI
 bal openapi -i docs/spec/openapi.json -o ballerina --mode client --license docs/license.txt --client-methods remote
 ```
 
-Note: The license year is hardcoded to 2024, change if necessary.
+Note: The license year is hardcoded to 2026, change if necessary.
