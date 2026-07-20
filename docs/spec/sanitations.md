@@ -325,7 +325,7 @@ These changes are done in order to improve the overall usability, and as workaro
 The following command was used to generate the Ballerina client from the OpenAPI specification. The command should be executed from the repository root directory.
 
 ```bash
-bal openapi -i docs/spec/aligned_ballerina_openapi.json -o ballerina --mode client --license docs/license.txt --client-methods remote
+bal openapi -i docs/spec/openapi.json -o ballerina --mode client --license docs/license.txt --client-methods remote
 ```
 
 Note: The license year is hardcoded to 2024, change if necessary.
