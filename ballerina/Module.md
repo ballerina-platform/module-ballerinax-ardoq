@@ -40,18 +40,20 @@ import ballerinax/ardoq;
 
 ### Step 2: Instantiate a new connector
 
-1. Create a `Config.toml` file and configure the obtained token:
+1. Create a `Config.toml` file and configure the obtained token. If you use a dedicated Ardoq instance (e.g. `https://your-org.ardoq.com`) instead of the default `app.ardoq.com`, also set `serviceUrl`:
 
     ```toml
     token = "<your-ardoq-api-token>"
+    serviceUrl = "https://app.ardoq.com/api/v2"
     ```
 
 2. Create an `ardoq:Client` instance:
 
     ```ballerina
     configurable string token = ?;
+    configurable string serviceUrl = "https://app.ardoq.com/api/v2";
 
-    final ardoq:Client ardoqClient = check new ({auth: {token: token}});
+    final ardoq:Client ardoqClient = check new ({auth: {token: token}}, serviceUrl = serviceUrl);
     ```
 
 ### Step 3: Invoke the connector operation
