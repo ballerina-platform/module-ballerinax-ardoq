@@ -41,14 +41,6 @@ public type ListAttachmentsQueries record {
     string folder?;
 };
 
-# A Batch response
-public type BatchResponse record {
-    # Results of the component operations executed in a batch request
-    ComponentResults components?;
-    # Results of the reference operations executed in a batch request
-    ReferenceResults references?;
-};
-
 # Criteria for matching an existing component in a batch upsert or delete operation
 public type ComponentMatch record {
     # A custom field can uniquely identify an entity in a workspace
@@ -61,6 +53,14 @@ public type ComponentMatch record {
     anydata typeId?;
     # The component key can be used to uniquely refer to a component in a more human-readable way, and is searchable in the application
     string componentKey?;
+};
+
+# A Batch response
+public type BatchResponse record {
+    # Results of the component operations executed in a batch request
+    ComponentResults components?;
+    # Results of the reference operations executed in a batch request
+    ReferenceResults references?;
 };
 
 # Information about a column
@@ -163,6 +163,10 @@ public type PaginatedReportTabularResponse record {
 # Provides a set of configurations for controlling the behaviours when communicating with a remote HTTP endpoint.
 @display {label: "Connection Config"}
 public type ConnectionConfig record {|
+    # Configurations related to client authentication
+    http:BearerTokenConfig auth;
+    # Organization label (required when using app.ardoq.com shared domain, optional for custom domains). If not provided for shared domain, will be fetched automatically from /api/v2/me
+    string orgLabel?;
     # The HTTP version understood by the client
     http:HttpVersion httpVersion = http:HTTP_2_0;
     # Configurations related to HTTP/1.x protocol
@@ -254,12 +258,6 @@ public type CreatedComponentResult record {
     string batchId?;
 };
 
-public type componentsUpdateItemsObject record {
-    string id;
-    int|"latest" ifVersionMatch;
-    record {record {} customFields?; anydata name?; anydata? description?; string? color?; string? shape?; string? icon?; string? image?; string? parent?;} body;
-};
-
 # Create, update, upsert, and delete operations on references in a batch request
 public type ReferenceOperations record {
     ReferenceOperationsUpsert[] upsert?;
@@ -268,10 +266,16 @@ public type ReferenceOperations record {
     ReferenceOperationsDelete[] delete?;
 };
 
+# Batch request options
+public type BatchRequestOptions record {
+    # By default the full JSON results of create and update operations are not included in the response
+    boolean respondWithEntities?;
+};
+
 # A Report Overview Returned by Ardoq
 public type ReportOverview record {
     # The type of data source backing the report
-    "graphSearch"|"advancedSearch" datasource;
+    "graphSearch"|"advancedSearch"|"advancedSearchPostgres" datasource;
     # Information about the columns in a report
     Column[] columns;
     # Name of report and stored query
@@ -286,12 +290,6 @@ public type ReportOverview record {
     # The current version of the report. Versions are used to resolve contention between different users editing the same entity simultaneously
     @jsondata:Name {value: "_version"}
     int version;
-};
-
-# Batch request options
-public type BatchRequestOptions record {
-    # By default the full JSON results of create and update operations are not included in the response
-    boolean respondWithEntities?;
 };
 
 # Represents the Queries record for the operation: listReports
@@ -589,12 +587,6 @@ public type Column record {
     string label;
     # The api name of the custom field or built-in property (or custom gremlin result)
     string 'key;
-};
-
-public type referencesUpdateItemsObject record {
-    string id;
-    int|"latest" ifVersionMatch;
-    record {record {} customFields?; string displayText?; anydata? description?; string 'source?; string target?;} body;
 };
 
 # Criteria for matching an existing reference in a batch upsert or delete operation

@@ -8,7 +8,7 @@
 
 [Ardoq](https://www.ardoq.com/) is a data-driven enterprise architecture platform that helps organizations model, analyze, and visualize their business and IT landscapes as connected data.
 
-The `ballerinax/ardoq` connector offers APIs to connect and interact with the [Ardoq Public API](https://developer.ardoq.com/), enabling operations on components, references, workspaces, reports, attachments, and transactional batch requests. The connector is built against Ardoq Public API version `2026-07-13-df7c4c4b`.
+The `ballerinax/ardoq` connector offers APIs to connect and interact with the [Ardoq Public API](https://developer.ardoq.com/), enabling operations on components, references, workspaces, reports, attachments, and transactional batch requests.
 
 ## Setup guide
 
@@ -20,11 +20,36 @@ To use the Ardoq connector, you must have access to an Ardoq organization and an
 
 ### Step 2: Generate an API token
 
-1. Click your profile icon in the top-right corner and select **Account settings**.
-2. Open the **API and tokens** tab.
-3. Click **Create token**, give it a descriptive name, and copy the generated token value.
+> Also see Ardoq's own guide on [generating an API token](https://developer.ardoq.com/getting-started/generating_an_api_token/).
 
-> **Note:** The Ardoq Public API expects the token as a bearer token in the `Authorization` header of every request: `Authorization: Bearer <token>`.
+1. Click your organization name in the top-left corner and select **Admin** > **Access control**.
+
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-ardoq/main/docs/setup/resources/access-control.png alt="Navigate to Access control" style="border:1px solid #000000; width:80%">
+
+2. Select **Service accounts** and click **+ Create new**.
+
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-ardoq/main/docs/setup/resources/service-accounts.png alt="Create a new service account" style="border:1px solid #000000; width:80%">
+
+3. Give the service account a name and a token description, then confirm. Copy the generated token — it is only shown once, though you can regenerate it later if needed.
+
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-ardoq/main/docs/setup/resources/generate-token.png alt="Copy the generated API token" style="border:1px solid #000000; width:80%">
+
+> **Note:** Pass the token to the `ardoq:Client` via the `auth` configuration when creating it — the connector attaches it as a bearer token in the `Authorization` header of every request automatically.
+
+### Step 3: Organization label (automatic handling)
+
+If you sign in at `app.ardoq.com` (rather than a dedicated domain like `https://your-org.ardoq.com`), every request must carry an `X-org` header to identify your organization. **The connector automatically detects when you're using `app.ardoq.com` and fetches your organization label using the `/me` endpoint, then injects the `X-org` header into all requests for you.**
+
+If you prefer to provide the organization label explicitly, you can do so in the connection configuration:
+
+```ballerina
+final ardoq:Client ardoqClient = check new ({
+    auth: {token: token},
+    orgLabel: "your-org-label"
+}, serviceUrl = serviceUrl);
+```
+
+If you're on a dedicated domain, the organization is already implied by the domain itself and automatic handling is skipped. See Ardoq's [concepts guide](https://developer.ardoq.com/getting-started/making_a_simple_request/) for more details.
 
 ## Quickstart
 
@@ -38,18 +63,20 @@ import ballerinax/ardoq;
 
 ### Step 2: Instantiate a new connector
 
-1. Create a `Config.toml` file and configure the obtained token:
+1. Create a `Config.toml` file and configure the obtained token. If you use a dedicated Ardoq instance (e.g. `https://your-org.ardoq.com`) instead of the default `app.ardoq.com`, also set `serviceUrl`:
 
     ```toml
     token = "<your-ardoq-api-token>"
+    serviceUrl = "https://app.ardoq.com/api/v2"
     ```
 
 2. Create an `ardoq:Client` instance:
 
     ```ballerina
     configurable string token = ?;
+    configurable string serviceUrl = "https://app.ardoq.com/api/v2";
 
-    final ardoq:Client ardoqClient = check new ();
+    final ardoq:Client ardoqClient = check new ({auth: {token: token}}, serviceUrl = serviceUrl);
     ```
 
 ### Step 3: Invoke the connector operation
@@ -60,7 +87,7 @@ Now, utilize the available connector operations.
 
 ```ballerina
 public function main() returns error? {
-    ardoq:PaginatedWorkspaceResponse workspaces = check ardoqClient->listWorkspaces({"Authorization": "Bearer " + token});
+    ardoq:PaginatedWorkspaceResponse workspaces = check ardoqClient->listWorkspaces();
     foreach ardoq:Workspace workspace in workspaces.values {
         io:println(workspace.name);
     }

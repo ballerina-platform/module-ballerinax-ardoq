@@ -5,12 +5,9 @@ name = "ardoq"
 version = "@toml.version@"
 license = ["Apache-2.0"]
 authors = ["Ballerina"]
-keywords = [] # TODO: Add keywords
-# icon = "icon.png" # TODO: Add icon
+keywords = ["Name/Ardoq", "Area/ERP & Business Operations", "Vendor/Ardoq", "Cost/Paid", "Type/Connector", "Ardoq", "Enterprise Architecture", "EA"]
+icon = "icon.png"
 repository = "https://github.com/ballerina-platform/module-ballerinax-ardoq"
 
 [build-options]
 observabilityIncluded = true
-
-[platform.java21]
-graalvmCompatible = true

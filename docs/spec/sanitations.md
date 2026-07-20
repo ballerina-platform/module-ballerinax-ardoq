@@ -1,12 +1,12 @@
-_Author_:  <!-- TODO: Add author name --> \
+_Author_:  Dilan Perera \
 _Created_: 2026/07/17 \
-_Updated_: 2026/07/17 \
+_Updated_: 2026/07/20 \
 _Edition_: Swan Lake
 
 # Sanitation for OpenAPI specification
 
-This document records the sanitation done on top of the official OpenAPI specification from {{MODULE_NAME_PC}}. 
-The OpenAPI specification is obtained from (TODO: Add source link).
+This document records the sanitation done on top of the official OpenAPI specification from Ardoq. 
+The OpenAPI specification is obtained from [Ardoq Developer Portal](https://developer.ardoq.com/public-api/).
 These changes are done in order to improve the overall usability, and as workarounds for some known language limitations.
 
 
@@ -310,12 +310,22 @@ These changes are done in order to improve the overall usability, and as workaro
 - **Reason**: The API can return a null value for this field.
 <!-- auto-generated -->
 
+51. Add a `BearerAuth` security scheme
+- **Original**: The specification did not declare any `securitySchemes`, so the generated client required callers to manually attach an `Authorization: Bearer <token>` header to every request.
+- **Updated**: Added an HTTP bearer `securitySchemes.BearerAuth` and applied it globally via `security: [{"BearerAuth": []}]`.
+- **Reason**: Lets the generated `ConnectionConfig` carry an `auth: http:BearerTokenConfig` field so the token is supplied once at client construction and attached automatically by the underlying `http:Client`.
+
+52. Change `ReportOverview datasource` enum
+- **Original**: `datasource` only allowed `"graphSearch"` and `"advancedSearch"`.
+- **Updated**: Added `"advancedSearchPostgres"` as a third allowed value.
+- **Reason**: The live API returns this value for reports backed by the Postgres-based advanced search engine, but the original specification omitted it, causing payload binding failures on `listReports`/`getReport`.
+
 ## OpenAPI cli command
 
 The following command was used to generate the Ballerina client from the OpenAPI specification. The command should be executed from the repository root directory.
 
 ```bash
-bal openapi -i docs/spec/aligned_ballerina_openapi.json -o ballerina --mode client --license docs/license.txt --client-methods remote
+bal openapi -i docs/spec/openapi.json -o ballerina --mode client --license docs/license.txt --client-methods remote
 ```
 
-Note: The license year is hardcoded to 2024, change if necessary.
+Note: The license year is hardcoded to 2026, change if necessary.

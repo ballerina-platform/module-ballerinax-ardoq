@@ -26,19 +26,18 @@ configurable string serviceUrl = "https://app.ardoq.com/api/v2";
 configurable string workspaceName = "Application Portfolio";
 
 public function main() returns error? {
-    ardoq:Client ardoqClient = check new (serviceUrl = serviceUrl);
-    map<string|string[]> headers = {"Authorization": "Bearer " + token};
+    ardoq:Client ardoqClient = check new ({auth: {token: token}}, serviceUrl = serviceUrl);
 
     // Step 1: Find the workspace to model in
-    ardoq:PaginatedWorkspaceResponse workspaces = check ardoqClient->listWorkspaces(headers, name = workspaceName);
+    ardoq:PaginatedWorkspaceResponse workspaces = check ardoqClient->listWorkspaces(name = workspaceName);
     if workspaces.values.length() == 0 {
         return error(string `Workspace '${workspaceName}' was not found`);
     }
     ardoq:Workspace workspace = workspaces.values[0];
-    io:println("Using workspace: ", workspace.name, " (", workspace.id, ")");
+    io:println(string `Using workspace: ${workspace.name} (${workspace.id})`);
 
     // Step 2: Discover the component and reference types defined by the workspace model
-    ardoq:WorkspaceContext context = check ardoqClient->getWorkspaceContext(workspace.id, headers);
+    ardoq:WorkspaceContext context = check ardoqClient->getWorkspaceContext(workspace.id);
     if context.componentTypes.length() == 0 || context.referenceTypes.length() == 0 {
         return error("The workspace model defines no component or reference types");
     }
@@ -51,16 +50,16 @@ public function main() returns error? {
         rootWorkspace: workspace.id,
         typeId: componentTypeId,
         description: "Handles customer payment processing"
-    }, headers);
-    io:println("Created component: ", paymentService.name, " (", paymentService.id, ")");
+    });
+    io:println(string `Created component: ${paymentService.name} (${paymentService.id})`);
 
     ardoq:Component ledgerService = check ardoqClient->createComponent({
         name: "Ledger Service",
         rootWorkspace: workspace.id,
         typeId: componentTypeId,
         description: "Maintains the financial ledger"
-    }, headers);
-    io:println("Created component: ", ledgerService.name, " (", ledgerService.id, ")");
+    });
+    io:println(string `Created component: ${ledgerService.name} (${ledgerService.id})`);
 
     // Step 4: Link them with a dependency reference
     ardoq:Reference dependency = check ardoqClient->createReference({
@@ -68,6 +67,6 @@ public function main() returns error? {
         'source: paymentService.id,
         target: ledgerService.id,
         'type: referenceTypeId
-    }, headers);
-    io:println("Created reference: ", dependency.id, " (", paymentService.name, " -> ", ledgerService.name, ")");
+    });
+    io:println(string `Created reference: ${dependency.id} (${paymentService.name} -> ${ledgerService.name})`);
 }

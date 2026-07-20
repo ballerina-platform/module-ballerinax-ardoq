@@ -26,26 +26,25 @@ configurable string serviceUrl = "https://app.ardoq.com/api/v2";
 configurable string reportName = "Application Criticality Report";
 
 public function main() returns error? {
-    ardoq:Client ardoqClient = check new (serviceUrl = serviceUrl);
-    map<string|string[]> headers = {"Authorization": "Bearer " + token};
+    ardoq:Client ardoqClient = check new ({auth: {token: token}}, serviceUrl = serviceUrl);
 
     // Step 1: Find the report by name
-    ardoq:PaginatedReportResponse reports = check ardoqClient->listReports(headers, name = reportName);
+    ardoq:PaginatedReportResponse reports = check ardoqClient->listReports(name = reportName);
     if reports.values.length() == 0 {
         return error(string `Report '${reportName}' was not found`);
     }
     ardoq:ReportOverview report = reports.values[0];
-    io:println("Found report: ", report.name, " (", report.id, ")");
+    io:println(string `Found report: ${report.name} (${report.id})`);
 
     // Step 2: Fetch the report definition and show its columns
-    ardoq:ReportOverview definition = check ardoqClient->getReport(report.id, headers);
+    ardoq:ReportOverview definition = check ardoqClient->getReport(report.id);
     string[] columnLabels = from ardoq:Column column in definition.columns
         select column.label;
-    io:println("Columns: ", string:'join(", ", ...columnLabels));
+    io:println(string `Columns: ${string:'join(", ", ...columnLabels)}`);
 
     // Step 3: Run the report and print each result row
-    ardoq:PaginatedReportTabularResponse results = check ardoqClient->runReportTabular(report.id, headers);
-    io:println("Rows: ", results.values.length());
+    ardoq:PaginatedReportTabularResponse results = check ardoqClient->runReportTabular(report.id);
+    io:println(string `Rows: ${results.values.length()}`);
     foreach anydata[] row in results.values {
         io:println(row);
     }

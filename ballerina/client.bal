@@ -23,77 +23,112 @@ import ballerina/http;
 # Resources for writing custom integrations.
 public isolated client class Client {
     final http:Client clientEp;
+    final readonly & string? orgLabel;
+    final boolean requiresXOrg;
+    
     # Gets invoked to initialize the `connector`.
     #
     # + config - The configurations to be used when initializing the `connector` 
     # + serviceUrl - URL of the target service 
     # + return - An error if connector initialization failed 
-    public isolated function init(ConnectionConfig config =  {}, string serviceUrl = "https://app.ardoq.com/api/v2") returns error? {
-        http:ClientConfiguration httpClientConfig = {httpVersion: config.httpVersion, http1Settings: config.http1Settings, http2Settings: config.http2Settings, timeout: config.timeout, forwarded: config.forwarded, followRedirects: config.followRedirects, poolConfig: config.poolConfig, cache: config.cache, compression: config.compression, circuitBreaker: config.circuitBreaker, retryConfig: config.retryConfig, cookieConfig: config.cookieConfig, responseLimits: config.responseLimits, secureSocket: config.secureSocket, proxy: config.proxy, socketConfig: config.socketConfig, validation: config.validation, laxDataBinding: config.laxDataBinding};
-        self.clientEp = check new (serviceUrl, httpClientConfig);
+    public isolated function init(ConnectionConfig config, string serviceUrl = "https://app.ardoq.com/api/v2") returns error? {
+        // Determine if we're using the shared domain (app.ardoq.com)
+        self.requiresXOrg = serviceUrl.includes("app.ardoq.com");
+        
+        http:ClientConfiguration httpClientConfig = {auth: config.auth, httpVersion: config.httpVersion, http1Settings: config.http1Settings, http2Settings: config.http2Settings, timeout: config.timeout, forwarded: config.forwarded, followRedirects: config.followRedirects, poolConfig: config.poolConfig, cache: config.cache, compression: config.compression, circuitBreaker: config.circuitBreaker, retryConfig: config.retryConfig, cookieConfig: config.cookieConfig, responseLimits: config.responseLimits, secureSocket: config.secureSocket, proxy: config.proxy, socketConfig: config.socketConfig, validation: config.validation, laxDataBinding: config.laxDataBinding};
+        http:Client tempClient = check new (serviceUrl, httpClientConfig);
+        
+        // If using shared domain and orgLabel not provided, fetch it from /me endpoint
+        if self.requiresXOrg && config.orgLabel is () {
+            UserInfo userInfo = check tempClient->/me.get();
+            string? fetchedLabel = userInfo?.org?.label;
+            if fetchedLabel is () {
+                return error("Unable to automatically determine organization label. Please provide orgLabel in ConnectionConfig.");
+            }
+            self.orgLabel = fetchedLabel.cloneReadOnly();
+        } else {
+            self.orgLabel = config.orgLabel.cloneReadOnly();
+        }
+        
+        self.clientEp = tempClient;
+    }
+    
+    # Merges X-org header into provided headers when using shared domain
+    #
+    # + headers - User-provided headers
+    # + return - Headers with X-org added if needed
+    private isolated function getHeaders(map<string|string[]> headers = {}) returns map<string|string[]> {
+        map<string|string[]> mergedHeaders = headers.clone();
+        if self.requiresXOrg {
+            string? label = self.orgLabel;
+            if label is string && !mergedHeaders.hasKey("X-org") {
+                mergedHeaders["X-org"] = label;
+            }
+        }
+        return mergedHeaders;
     }
 
     # Get current user and organization info
     #
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The current user and their organization 
     remote isolated function getMe(map<string|string[]> headers = {}) returns UserInfo|error {
         string resourcePath = string `/me`;
-        return self.clientEp->get(resourcePath, headers);
+        return self.clientEp->get(resourcePath, self.getHeaders(headers));
     }
 
     # List References
     #
     # + headers - Headers to be sent with the request 
     # + queries - Queries to be sent with the request 
-    # + return - Success 
+    # + return - A paginated list of references matching the given filters 
     remote isolated function listReferences(map<string|string[]> headers = {}, *ListReferencesQueries queries) returns PaginatedReferenceResponse|error {
         string resourcePath = string `/references`;
         resourcePath = resourcePath + check getPathForQueryParam(queries);
-        return self.clientEp->get(resourcePath, headers);
+        return self.clientEp->get(resourcePath, self.getHeaders(headers));
     }
 
     # Create a Reference
     #
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The newly created reference 
     remote isolated function createReference(CreateReferenceRequest payload, map<string|string[]> headers = {}) returns Reference|error {
         string resourcePath = string `/references`;
         http:Request request = new;
         json jsonBody = jsondata:toJson(payload);
         request.setPayload(jsonBody, "application/json");
-        return self.clientEp->post(resourcePath, request, headers);
+        return self.clientEp->post(resourcePath, request, self.getHeaders(headers));
     }
 
     # List attachments
     #
     # + headers - Headers to be sent with the request 
     # + queries - Queries to be sent with the request 
-    # + return - Success 
+    # + return - A paginated list of attachments matching the given filters 
     remote isolated function listAttachments(map<string|string[]> headers = {}, *ListAttachmentsQueries queries) returns PaginatedAttachmentResponse|error {
         string resourcePath = string `/attachments`;
         resourcePath = resourcePath + check getPathForQueryParam(queries);
-        return self.clientEp->get(resourcePath, headers);
+        return self.clientEp->get(resourcePath, self.getHeaders(headers));
     }
 
     # Get a component
     #
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The requested component 
     remote isolated function getComponent(string id, map<string|string[]> headers = {}) returns Component|error {
         string resourcePath = string `/components/${getEncodedUri(id)}`;
-        return self.clientEp->get(resourcePath, headers);
+        return self.clientEp->get(resourcePath, self.getHeaders(headers));
     }
 
     # Delete a component
     #
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The component was deleted successfully 
     remote isolated function deleteComponent(string id, map<string|string[]> headers = {}) returns error? {
         string resourcePath = string `/components/${getEncodedUri(id)}`;
-        return self.clientEp->delete(resourcePath, headers = headers);
+        return self.clientEp->delete(resourcePath, headers = self.getHeaders(headers));
     }
 
     # Update a component
@@ -101,57 +136,57 @@ public isolated client class Client {
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
     # + queries - Queries to be sent with the request 
-    # + return - Success 
+    # + return - The updated component 
     remote isolated function updateComponent(string id, UpdateComponentRequest payload, map<string|string[]> headers = {}, *UpdateComponentQueries queries) returns Component|error {
         string resourcePath = string `/components/${getEncodedUri(id)}`;
         resourcePath = resourcePath + check getPathForQueryParam(queries);
         http:Request request = new;
         json jsonBody = jsondata:toJson(payload);
         request.setPayload(jsonBody, "application/json");
-        return self.clientEp->patch(resourcePath, request, headers);
+        return self.clientEp->patch(resourcePath, request, self.getHeaders(headers));
     }
 
     # List Workspaces
     #
     # + headers - Headers to be sent with the request 
     # + queries - Queries to be sent with the request 
-    # + return - Success 
+    # + return - A paginated list of workspaces matching the given filters 
     remote isolated function listWorkspaces(map<string|string[]> headers = {}, *ListWorkspacesQueries queries) returns PaginatedWorkspaceResponse|error {
         string resourcePath = string `/workspaces`;
         resourcePath = resourcePath + check getPathForQueryParam(queries);
-        return self.clientEp->get(resourcePath, headers);
+        return self.clientEp->get(resourcePath, self.getHeaders(headers));
     }
 
     # Execute a batch request
     #
     # + headers - Headers to be sent with the request 
-    # + return - Success 
-    remote isolated function executeBatch(record {record {boolean respondWithEntities?;} options?; record {record {|record {record {|string...;|} customFields?; string rootWorkspace?; anydata name?; string componentKey?;}...;|} components?; record {|record {record {|string...;|} customFields?; string rootWorkspace?; string 'source?; string target?; int 'type?;}...;|} references?;} aliases?; record {record {string batchId?; record {string rootWorkspace; string? shape?; string? image?; string? parent?; anydata name; anydata typeId; string? color?; anydata? description?; record {} customFields?; string? icon?;} body;}[] create?; record {string[] uniqueBy; record {string rootWorkspace; string? shape?; string? image?; string? parent?; anydata name; anydata typeId; string? color?; anydata? description?; record {} customFields?; string? icon?;} body; string batchId?;}[] upsert?; record {string id; int|"latest" ifVersionMatch; record {record {} customFields?; anydata name?; anydata? description?; string? color?; string? shape?; string? icon?; string? image?; string? parent?;} body;}[] update?; record {string id?; record {record {|string...;|} customFields?; string rootWorkspace?; anydata name?; string componentKey?; anydata typeId?;} 'match?;}[] delete?;} components?; record {record {record {record {} customFields?; int 'type; string displayText?; anydata? description?; string 'source; string target;} body; string batchId?;}[] create?; record {string[] uniqueBy; record {record {} customFields?; int 'type; string displayText?; anydata? description?; string 'source; string target;} body; string batchId?;}[] upsert?; record {string id; int|"latest" ifVersionMatch; record {record {} customFields?; string displayText?; anydata? description?; string 'source?; string target?;} body;}[] update?; record {string id?; record {record {|string...;|} customFields?; string rootWorkspace?; string 'source?; string target?; int 'type?; string targetWorkspace?;} 'match?;}[] delete?;} references?;} payload, map<string|string[]> headers = {}) returns BatchResponse|error {
+    # + return - The results of the create, update, upsert, and delete operations executed in the batch request 
+    remote isolated function executeBatch(BatchRequest payload, map<string|string[]> headers = {}) returns BatchResponse|error {
         string resourcePath = string `/batch`;
         http:Request request = new;
         json jsonBody = jsondata:toJson(payload);
         request.setPayload(jsonBody, "application/json");
-        return self.clientEp->post(resourcePath, request, headers);
+        return self.clientEp->post(resourcePath, request, self.getHeaders(headers));
     }
 
     # Get a reference
     #
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The requested reference 
     remote isolated function getReference(string id, map<string|string[]> headers = {}) returns Reference|error {
         string resourcePath = string `/references/${getEncodedUri(id)}`;
-        return self.clientEp->get(resourcePath, headers);
+        return self.clientEp->get(resourcePath, self.getHeaders(headers));
     }
 
     # Delete a reference
     #
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The reference was deleted successfully 
     remote isolated function deleteReference(string id, map<string|string[]> headers = {}) returns error? {
         string resourcePath = string `/references/${getEncodedUri(id)}`;
-        return self.clientEp->delete(resourcePath, headers = headers);
+        return self.clientEp->delete(resourcePath, headers = self.getHeaders(headers));
     }
 
     # Update a Reference
@@ -159,46 +194,46 @@ public isolated client class Client {
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
     # + queries - Queries to be sent with the request 
-    # + return - Success 
+    # + return - The updated reference 
     remote isolated function updateReference(string id, UpdateReferenceRequest payload, map<string|string[]> headers = {}, *UpdateReferenceQueries queries) returns Reference|error {
         string resourcePath = string `/references/${getEncodedUri(id)}`;
         resourcePath = resourcePath + check getPathForQueryParam(queries);
         http:Request request = new;
         json jsonBody = jsondata:toJson(payload);
         request.setPayload(jsonBody, "application/json");
-        return self.clientEp->patch(resourcePath, request, headers);
+        return self.clientEp->patch(resourcePath, request, self.getHeaders(headers));
     }
 
     # Report definition
     #
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The requested report definition 
     remote isolated function getReport(string id, map<string|string[]> headers = {}) returns ReportOverview|error {
         string resourcePath = string `/reports/${getEncodedUri(id)}`;
-        return self.clientEp->get(resourcePath, headers);
+        return self.clientEp->get(resourcePath, self.getHeaders(headers));
     }
 
     # Get an attachment
     #
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The requested attachment 
     remote isolated function getAttachment(string id, map<string|string[]> headers = {}) returns Attachment|error {
         string resourcePath = string `/attachments/${getEncodedUri(id)}`;
-        return self.clientEp->get(resourcePath, headers);
+        return self.clientEp->get(resourcePath, self.getHeaders(headers));
     }
 
     # Expand Batch
     #
     # + headers - Headers to be sent with the request 
-    # + return - Success 
-    remote isolated function expandBatch(record {record {boolean respondWithEntities?;} options?; record {record {|record {record {|string...;|} customFields?; string rootWorkspace?; anydata name?; string componentKey?;}...;|} components?; record {|record {record {|string...;|} customFields?; string rootWorkspace?; string 'source?; string target?; int 'type?;}...;|} references?;} aliases?; record {record {string batchId?; record {string rootWorkspace; string? shape?; string? image?; string? parent?; anydata name; anydata typeId; string? color?; anydata? description?; record {} customFields?; string? icon?;} body;}[] create?; record {string[] uniqueBy; record {string rootWorkspace; string? shape?; string? image?; string? parent?; anydata name; anydata typeId; string? color?; anydata? description?; record {} customFields?; string? icon?;} body; string batchId?;}[] upsert?; record {string id; int|"latest" ifVersionMatch; record {record {} customFields?; anydata name?; anydata? description?; string? color?; string? shape?; string? icon?; string? image?; string? parent?;} body;}[] update?; record {string id?; record {record {|string...;|} customFields?; string rootWorkspace?; anydata name?; string componentKey?; anydata typeId?;} 'match?;}[] delete?;} components?; record {record {record {record {} customFields?; int 'type; string displayText?; anydata? description?; string 'source; string target;} body; string batchId?;}[] create?; record {string[] uniqueBy; record {record {} customFields?; int 'type; string displayText?; anydata? description?; string 'source; string target;} body; string batchId?;}[] upsert?; record {string id; int|"latest" ifVersionMatch; record {record {} customFields?; string displayText?; anydata? description?; string 'source?; string target?;} body;}[] update?; record {string id?; record {record {|string...;|} customFields?; string rootWorkspace?; string 'source?; string target?; int 'type?; string targetWorkspace?;} 'match?;}[] delete?;} references?;} payload, map<string|string[]> headers = {}) returns BatchRequest|error {
+    # + return - The fully expanded batch request, with aliases resolved to their underlying identifiers 
+    remote isolated function expandBatch(BatchRequest payload, map<string|string[]> headers = {}) returns BatchRequest|error {
         string resourcePath = string `/batch/expand`;
         http:Request request = new;
         json jsonBody = jsondata:toJson(payload);
         request.setPayload(jsonBody, "application/json");
-        return self.clientEp->post(resourcePath, request, headers);
+        return self.clientEp->post(resourcePath, request, self.getHeaders(headers));
     }
 
     # Run Report (Objects)
@@ -206,74 +241,74 @@ public isolated client class Client {
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
     # + queries - Queries to be sent with the request 
-    # + return - Success 
+    # + return - A paginated list of report result rows, keyed by column label or key 
     remote isolated function runReportObjects(string id, map<string|string[]> headers = {}, *RunReportObjectsQueries queries) returns PaginatedReportObjectResponse|error {
         string resourcePath = string `/reports/${getEncodedUri(id)}/run/objects`;
         resourcePath = resourcePath + check getPathForQueryParam(queries);
-        return self.clientEp->get(resourcePath, headers);
+        return self.clientEp->get(resourcePath, self.getHeaders(headers));
     }
 
     # Get a workspace
     #
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The requested workspace 
     remote isolated function getWorkspace(string id, map<string|string[]> headers = {}) returns Workspace|error {
         string resourcePath = string `/workspaces/${getEncodedUri(id)}`;
-        return self.clientEp->get(resourcePath, headers);
+        return self.clientEp->get(resourcePath, self.getHeaders(headers));
     }
 
     # List Report definitions
     #
     # + headers - Headers to be sent with the request 
     # + queries - Queries to be sent with the request 
-    # + return - Success 
+    # + return - A paginated list of report definitions matching the given filters 
     remote isolated function listReports(map<string|string[]> headers = {}, *ListReportsQueries queries) returns PaginatedReportResponse|error {
         string resourcePath = string `/reports`;
         resourcePath = resourcePath + check getPathForQueryParam(queries);
-        return self.clientEp->get(resourcePath, headers);
+        return self.clientEp->get(resourcePath, self.getHeaders(headers));
     }
 
     # Workspace Context
     #
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The component and reference types defined by the workspace's model 
     remote isolated function getWorkspaceContext(string id, map<string|string[]> headers = {}) returns WorkspaceContext|error {
         string resourcePath = string `/workspaces/${getEncodedUri(id)}/context`;
-        return self.clientEp->get(resourcePath, headers);
+        return self.clientEp->get(resourcePath, self.getHeaders(headers));
     }
 
     # Run Report (Tabular)
     #
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - A paginated list of report result rows in tabular (array) format 
     remote isolated function runReportTabular(string id, map<string|string[]> headers = {}) returns PaginatedReportTabularResponse|error {
         string resourcePath = string `/reports/${getEncodedUri(id)}/run/tabular`;
-        return self.clientEp->get(resourcePath, headers);
+        return self.clientEp->get(resourcePath, self.getHeaders(headers));
     }
 
     # List Components
     #
     # + headers - Headers to be sent with the request 
     # + queries - Queries to be sent with the request 
-    # + return - Success 
+    # + return - A paginated list of components matching the given filters 
     remote isolated function listComponents(map<string|string[]> headers = {}, *ListComponentsQueries queries) returns PaginatedComponentResponse|error {
         string resourcePath = string `/components`;
         resourcePath = resourcePath + check getPathForQueryParam(queries);
-        return self.clientEp->get(resourcePath, headers);
+        return self.clientEp->get(resourcePath, self.getHeaders(headers));
     }
 
     # Create a component
     #
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The newly created component 
     remote isolated function createComponent(CreateComponentRequest payload, map<string|string[]> headers = {}) returns Component|error {
         string resourcePath = string `/components`;
         http:Request request = new;
         json jsonBody = jsondata:toJson(payload);
         request.setPayload(jsonBody, "application/json");
-        return self.clientEp->post(resourcePath, request, headers);
+        return self.clientEp->post(resourcePath, request, self.getHeaders(headers));
     }
 }
