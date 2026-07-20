@@ -5,7 +5,7 @@ name = "ardoq"
 version = "@toml.version@"
 license = ["Apache-2.0"]
 authors = ["Ballerina"]
-keywords = [] # TODO: Add keywords
+keywords = ["ardoq", "enterprise-architecture", "integration"]
 icon = "icon.png"
 repository = "https://github.com/ballerina-platform/module-ballerinax-ardoq"
 

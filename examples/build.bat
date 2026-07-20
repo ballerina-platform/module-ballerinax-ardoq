@@ -67,12 +67,12 @@ cd /d "%BAL_EXAMPLES_DIR%"
 set ERROR_OCCURRED=0
 for /d %%D in ("%BAL_EXAMPLES_DIR%\*") do (
     if not "%%~nD"=="build" (
-        cd /d "%%D"
+        pushd "%%D"
         call bal %BAL_CMD%
         if errorlevel 1 (
             set ERROR_OCCURRED=1
         )
-        cd ..
+        popd
     )
 )
 if %ERROR_OCCURRED%==1 (

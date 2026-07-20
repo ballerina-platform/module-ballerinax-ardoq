@@ -72,7 +72,8 @@ echo "Destination Directory: $BAL_DESTINATION_DIR"
 # Loop through examples in the examples directory and execute the command
 echo "Processing examples in the examples directory..."
 cd "$BAL_EXAMPLES_DIR"
-for dir in $(find "$BAL_EXAMPLES_DIR" -type d -maxdepth 1 -mindepth 1); do
+for dir in "$BAL_EXAMPLES_DIR"/*/; do
+  dir="${dir%/}" # Remove trailing slash
   # Skip the build directory
   if [[ "$(basename "$dir")" == "build" ]]; then
     continue
