@@ -36,7 +36,7 @@ public isolated client class Client {
     # Get current user and organization info
     #
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The current user and their organization 
     remote isolated function getMe(map<string|string[]> headers = {}) returns UserInfo|error {
         string resourcePath = string `/me`;
         return self.clientEp->get(resourcePath, headers);
@@ -46,7 +46,7 @@ public isolated client class Client {
     #
     # + headers - Headers to be sent with the request 
     # + queries - Queries to be sent with the request 
-    # + return - Success 
+    # + return - A paginated list of references matching the given filters 
     remote isolated function listReferences(map<string|string[]> headers = {}, *ListReferencesQueries queries) returns PaginatedReferenceResponse|error {
         string resourcePath = string `/references`;
         resourcePath = resourcePath + check getPathForQueryParam(queries);
@@ -56,7 +56,7 @@ public isolated client class Client {
     # Create a Reference
     #
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The newly created reference 
     remote isolated function createReference(CreateReferenceRequest payload, map<string|string[]> headers = {}) returns Reference|error {
         string resourcePath = string `/references`;
         http:Request request = new;
@@ -69,7 +69,7 @@ public isolated client class Client {
     #
     # + headers - Headers to be sent with the request 
     # + queries - Queries to be sent with the request 
-    # + return - Success 
+    # + return - A paginated list of attachments matching the given filters 
     remote isolated function listAttachments(map<string|string[]> headers = {}, *ListAttachmentsQueries queries) returns PaginatedAttachmentResponse|error {
         string resourcePath = string `/attachments`;
         resourcePath = resourcePath + check getPathForQueryParam(queries);
@@ -80,7 +80,7 @@ public isolated client class Client {
     #
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The requested component 
     remote isolated function getComponent(string id, map<string|string[]> headers = {}) returns Component|error {
         string resourcePath = string `/components/${getEncodedUri(id)}`;
         return self.clientEp->get(resourcePath, headers);
@@ -90,7 +90,7 @@ public isolated client class Client {
     #
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The component was deleted successfully 
     remote isolated function deleteComponent(string id, map<string|string[]> headers = {}) returns error? {
         string resourcePath = string `/components/${getEncodedUri(id)}`;
         return self.clientEp->delete(resourcePath, headers = headers);
@@ -101,7 +101,7 @@ public isolated client class Client {
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
     # + queries - Queries to be sent with the request 
-    # + return - Success 
+    # + return - The updated component 
     remote isolated function updateComponent(string id, UpdateComponentRequest payload, map<string|string[]> headers = {}, *UpdateComponentQueries queries) returns Component|error {
         string resourcePath = string `/components/${getEncodedUri(id)}`;
         resourcePath = resourcePath + check getPathForQueryParam(queries);
@@ -115,7 +115,7 @@ public isolated client class Client {
     #
     # + headers - Headers to be sent with the request 
     # + queries - Queries to be sent with the request 
-    # + return - Success 
+    # + return - A paginated list of workspaces matching the given filters 
     remote isolated function listWorkspaces(map<string|string[]> headers = {}, *ListWorkspacesQueries queries) returns PaginatedWorkspaceResponse|error {
         string resourcePath = string `/workspaces`;
         resourcePath = resourcePath + check getPathForQueryParam(queries);
@@ -125,7 +125,7 @@ public isolated client class Client {
     # Execute a batch request
     #
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The results of the create, update, upsert, and delete operations executed in the batch request 
     remote isolated function executeBatch(BatchRequest payload, map<string|string[]> headers = {}) returns BatchResponse|error {
         string resourcePath = string `/batch`;
         http:Request request = new;
@@ -138,7 +138,7 @@ public isolated client class Client {
     #
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The requested reference 
     remote isolated function getReference(string id, map<string|string[]> headers = {}) returns Reference|error {
         string resourcePath = string `/references/${getEncodedUri(id)}`;
         return self.clientEp->get(resourcePath, headers);
@@ -148,7 +148,7 @@ public isolated client class Client {
     #
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The reference was deleted successfully 
     remote isolated function deleteReference(string id, map<string|string[]> headers = {}) returns error? {
         string resourcePath = string `/references/${getEncodedUri(id)}`;
         return self.clientEp->delete(resourcePath, headers = headers);
@@ -159,7 +159,7 @@ public isolated client class Client {
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
     # + queries - Queries to be sent with the request 
-    # + return - Success 
+    # + return - The updated reference 
     remote isolated function updateReference(string id, UpdateReferenceRequest payload, map<string|string[]> headers = {}, *UpdateReferenceQueries queries) returns Reference|error {
         string resourcePath = string `/references/${getEncodedUri(id)}`;
         resourcePath = resourcePath + check getPathForQueryParam(queries);
@@ -173,7 +173,7 @@ public isolated client class Client {
     #
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The requested report definition 
     remote isolated function getReport(string id, map<string|string[]> headers = {}) returns ReportOverview|error {
         string resourcePath = string `/reports/${getEncodedUri(id)}`;
         return self.clientEp->get(resourcePath, headers);
@@ -183,7 +183,7 @@ public isolated client class Client {
     #
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The requested attachment 
     remote isolated function getAttachment(string id, map<string|string[]> headers = {}) returns Attachment|error {
         string resourcePath = string `/attachments/${getEncodedUri(id)}`;
         return self.clientEp->get(resourcePath, headers);
@@ -192,7 +192,7 @@ public isolated client class Client {
     # Expand Batch
     #
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The fully expanded batch request, with aliases resolved to their underlying identifiers 
     remote isolated function expandBatch(BatchRequest payload, map<string|string[]> headers = {}) returns BatchRequest|error {
         string resourcePath = string `/batch/expand`;
         http:Request request = new;
@@ -206,7 +206,7 @@ public isolated client class Client {
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
     # + queries - Queries to be sent with the request 
-    # + return - Success 
+    # + return - A paginated list of report result rows, keyed by column label or key 
     remote isolated function runReportObjects(string id, map<string|string[]> headers = {}, *RunReportObjectsQueries queries) returns PaginatedReportObjectResponse|error {
         string resourcePath = string `/reports/${getEncodedUri(id)}/run/objects`;
         resourcePath = resourcePath + check getPathForQueryParam(queries);
@@ -217,7 +217,7 @@ public isolated client class Client {
     #
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The requested workspace 
     remote isolated function getWorkspace(string id, map<string|string[]> headers = {}) returns Workspace|error {
         string resourcePath = string `/workspaces/${getEncodedUri(id)}`;
         return self.clientEp->get(resourcePath, headers);
@@ -227,7 +227,7 @@ public isolated client class Client {
     #
     # + headers - Headers to be sent with the request 
     # + queries - Queries to be sent with the request 
-    # + return - Success 
+    # + return - A paginated list of report definitions matching the given filters 
     remote isolated function listReports(map<string|string[]> headers = {}, *ListReportsQueries queries) returns PaginatedReportResponse|error {
         string resourcePath = string `/reports`;
         resourcePath = resourcePath + check getPathForQueryParam(queries);
@@ -238,7 +238,7 @@ public isolated client class Client {
     #
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The component and reference types defined by the workspace's model 
     remote isolated function getWorkspaceContext(string id, map<string|string[]> headers = {}) returns WorkspaceContext|error {
         string resourcePath = string `/workspaces/${getEncodedUri(id)}/context`;
         return self.clientEp->get(resourcePath, headers);
@@ -248,7 +248,7 @@ public isolated client class Client {
     #
     # + id - An Ardoq identifier (OID)
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - A paginated list of report result rows in tabular (array) format 
     remote isolated function runReportTabular(string id, map<string|string[]> headers = {}) returns PaginatedReportTabularResponse|error {
         string resourcePath = string `/reports/${getEncodedUri(id)}/run/tabular`;
         return self.clientEp->get(resourcePath, headers);
@@ -258,7 +258,7 @@ public isolated client class Client {
     #
     # + headers - Headers to be sent with the request 
     # + queries - Queries to be sent with the request 
-    # + return - Success 
+    # + return - A paginated list of components matching the given filters 
     remote isolated function listComponents(map<string|string[]> headers = {}, *ListComponentsQueries queries) returns PaginatedComponentResponse|error {
         string resourcePath = string `/components`;
         resourcePath = resourcePath + check getPathForQueryParam(queries);
@@ -268,7 +268,7 @@ public isolated client class Client {
     # Create a component
     #
     # + headers - Headers to be sent with the request 
-    # + return - Success 
+    # + return - The newly created component 
     remote isolated function createComponent(CreateComponentRequest payload, map<string|string[]> headers = {}) returns Component|error {
         string resourcePath = string `/components`;
         http:Request request = new;

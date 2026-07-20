@@ -28,7 +28,7 @@
         "description": "A simple endpoint for testing your connection to the Ardoq server.",
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The current user and their organization",
             "content": {
               "application/json": {
                 "schema": {
@@ -125,7 +125,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "A paginated list of references matching the given filters",
             "content": {
               "application/json": {
                 "schema": {
@@ -156,7 +156,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success",
+            "description": "The newly created reference",
             "content": {
               "application/json": {
                 "schema": {
@@ -205,7 +205,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "A paginated list of attachments matching the given filters",
             "content": {
               "application/json": {
                 "schema": {
@@ -243,7 +243,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The requested component",
             "content": {
               "application/json": {
                 "schema": {
@@ -279,7 +279,7 @@
         ],
         "responses": {
           "204": {
-            "description": "Success"
+            "description": "The component was deleted successfully"
           }
         },
         "deprecated": false,
@@ -330,7 +330,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The updated component",
             "content": {
               "application/json": {
                 "schema": {
@@ -380,7 +380,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "A paginated list of workspaces matching the given filters",
             "content": {
               "application/json": {
                 "schema": {
@@ -408,7 +408,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The results of the create, update, upsert, and delete operations executed in the batch request",
             "content": {
               "application/json": {
                 "schema": {
@@ -445,7 +445,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The requested reference",
             "content": {
               "application/json": {
                 "schema": {
@@ -480,7 +480,7 @@
         ],
         "responses": {
           "204": {
-            "description": "Success"
+            "description": "The reference was deleted successfully"
           }
         },
         "x-public-v2": true,
@@ -530,7 +530,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The updated reference",
             "content": {
               "application/json": {
                 "schema": {
@@ -567,7 +567,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The requested report definition",
             "content": {
               "application/json": {
                 "schema": {
@@ -604,7 +604,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The requested attachment",
             "content": {
               "application/json": {
                 "schema": {
@@ -631,7 +631,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The fully expanded batch request, with aliases resolved to their underlying identifiers",
             "content": {
               "application/json": {
                 "schema": {
@@ -684,7 +684,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "A paginated list of report result rows, keyed by column label or key",
             "content": {
               "application/json": {
                 "schema": {
@@ -721,7 +721,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The requested workspace",
             "content": {
               "application/json": {
                 "schema": {
@@ -758,7 +758,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "A paginated list of report definitions matching the given filters",
             "content": {
               "application/json": {
                 "schema": {
@@ -795,7 +795,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The component and reference types defined by the workspace's model",
             "content": {
               "application/json": {
                 "schema": {
@@ -832,7 +832,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "A paginated list of report result rows in tabular (array) format",
             "content": {
               "application/json": {
                 "schema": {
@@ -917,7 +917,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "A paginated list of components matching the given filters",
             "content": {
               "application/json": {
                 "schema": {
@@ -949,7 +949,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success",
+            "description": "The newly created component",
             "content": {
               "application/json": {
                 "schema": {
