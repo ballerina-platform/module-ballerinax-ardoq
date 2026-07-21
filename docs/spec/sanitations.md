@@ -322,10 +322,49 @@ These changes are done in order to improve the overall usability, and as workaro
 
 ## OpenAPI cli command
 
-The following command was used to generate the Ballerina client from the OpenAPI specification. The command should be executed from the repository root directory.
+The following command generates the raw OpenAPI-derived client. The command should be executed from the repository root directory.
 
 ```bash
-bal openapi -i docs/spec/openapi.json -o ballerina --mode client --license docs/license.txt --client-methods remote
+bal openapi -i docs/spec/openapi.json -o ballerina/generated --mode client --license docs/license.txt --client-methods remote
 ```
 
 Note: The license year is hardcoded to 2026, change if necessary.
+
+### Post-generation step: rename the generated client class
+
+The generated `client.bal` declares `public isolated client class Client`. Move the three
+generated files to `ballerina/generated_client.bal`, `ballerina/generated_types.bal`, and
+`ballerina/generated_utils.bal`, and rename the generated class to `GeneratedClient`
+(`public isolated client class Client {` → `isolated client class GeneratedClient {`).
+
+`ballerina/client.bal` is a hand-written wrapper around `GeneratedClient` — it resolves and
+attaches the `X-org` header required on the shared `app.ardoq.com` host (see step 51 below)
+and otherwise forwards every operation as-is. It is intentionally **not** regenerated.
+
+**Why not a Ballerina submodule instead?** The more conventional way to separate generated
+code from a hand-written wrapper is a submodule (e.g. `ballerina/modules/oas/`, as
+[module-ballerinax-googleapis.gmail](https://github.com/ballerina-platform/module-ballerinax-googleapis.gmail)
+does). We tried that first, but it breaks here: several Ardoq response types carry
+`@jsondata:Name` field mappings (e.g. `_meta`, `_id`, `_version`), and Ballerina's automatic
+HTTP response data binding fails to honor those annotations when the annotated type is
+declared in a *different* module than the code performing the call — every operation
+returning such a type fails with `payload binding failed: required field '<name>' not
+present in JSON`, even though the exact same code works when both the generated client and
+the calling code live in the same module. This reproduced consistently (confirmed via three
+isolated tests: flat single-module — passes; wrapper class in the same module — passes;
+wrapper delegating to a client in a separate submodule — fails) and does not depend on our
+wrapper's logic, only on the module boundary itself. Keeping the generated client in the
+same module as the hand-written wrapper (just under different file names and a renamed
+class) avoids the issue entirely.
+
+53. Add automatic `X-org` header resolution
+- **Change**: `ballerina/client.bal` is a hand-written wrapper (not generated) around the
+  OpenAPI-generated `GeneratedClient`. It resolves the caller's organization label — via an
+  explicit `orgLabel` parameter, or automatically through one `getMe()` call at
+  initialization when `serviceUrl` points at the shared `app.ardoq.com` host — and attaches
+  it as the `X-org` header on every request.
+- **Reason**: Per [Ardoq's docs](https://developer.ardoq.com/getting-started/making_a_simple_request/),
+  requests to `app.ardoq.com` must carry `X-org` since that host isn't scoped to a single
+  organization, unlike a dedicated domain (e.g. `https://your-org.ardoq.com`), where it's
+  optional. See the "Post-generation step" note above for why this lives in a hand-written
+  file rather than a generated one.
