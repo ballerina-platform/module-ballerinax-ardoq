@@ -28,11 +28,8 @@ public isolated client class Client {
     #
     # + config - The configurations to be used when initializing the `connector`
     # + serviceUrl - URL of the target service
-    # + orgLabel - Your organization label. Requests to the shared `app.ardoq.com` host must
-    #              carry this as the `X-org` header, since that host is not scoped to a single
-    #              organization the way a dedicated domain is. If not provided and `serviceUrl`
-    #              points at `app.ardoq.com`, it is resolved automatically via a `getMe()` call
-    #              during initialization. Not needed on a dedicated domain
+    # + orgLabel - The organization label. Required for the shared `app.ardoq.com` host
+    #              (auto-resolves if omitted). Ignored on dedicated domains
     # + return - An error if connector initialization failed
     public isolated function init(ConnectionConfig config, string serviceUrl = "https://app.ardoq.com/api/v2",
             string? orgLabel = ()) returns error? {
