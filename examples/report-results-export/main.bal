@@ -22,7 +22,7 @@ import ballerina/io;
 import ballerinax/ardoq;
 
 configurable string token = ?;
-configurable string serviceUrl = "https://instance.ardoq.com/api/v2";
+configurable string serviceUrl = ?;
 configurable string reportName = "Application Criticality Report";
 
 public function main() returns error? {

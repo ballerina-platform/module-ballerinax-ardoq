@@ -8,7 +8,7 @@
 
 [Ardoq](https://www.ardoq.com/) is a data-driven enterprise architecture platform that helps organizations model, analyze, and visualize their business and IT landscapes as connected data.
 
-The `ballerinax/ardoq` connector offers APIs to connect and interact with the [Ardoq Public API](https://developer.ardoq.com/), enabling operations on components, references, workspaces, reports, attachments, and transactional batch requests.
+The `ballerinax/ardoq` connector offers APIs to connect and interact with the [Ardoq Public API](https://developer.ardoq.com/public-api/), enabling operations on components, references, workspaces, reports, attachments, and transactional batch requests.
 
 ## Setup guide
 
@@ -59,7 +59,7 @@ import ballerinax/ardoq;
 
     ```ballerina
     configurable string token = ?;
-    configurable string serviceUrl = "https://instance.ardoq.com/api/v2";
+    configurable string serviceUrl = ?;
 
     final ardoq:Client ardoqClient = check new ({auth: {token: token}}, serviceUrl = serviceUrl);
     ```
