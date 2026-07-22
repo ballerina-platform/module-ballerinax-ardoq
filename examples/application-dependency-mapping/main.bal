@@ -22,7 +22,7 @@ import ballerina/io;
 import ballerinax/ardoq;
 
 configurable string token = ?;
-configurable string serviceUrl = "https://app.ardoq.com/api/v2";
+configurable string serviceUrl = "https://instance.ardoq.com/api/v2";
 configurable string workspaceName = "Application Portfolio";
 
 public function main() returns error? {

@@ -13,7 +13,7 @@ This example exports the results of an Ardoq report: it finds a report by name, 
 - Create a `Config.toml` in this directory:
   ```toml
   token = "<your-ardoq-api-token>"
-  serviceUrl = "https://app.ardoq.com/api/v2"
+  serviceUrl = "https://instance.ardoq.com/api/v2"
   reportName = "Application Criticality Report"
   ```
 

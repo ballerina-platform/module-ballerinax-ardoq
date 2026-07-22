@@ -34,13 +34,7 @@ To use the Ardoq connector, you must have access to an Ardoq organization and an
 
    <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-ardoq/main/docs/setup/resources/generate-token.png alt="Copy the generated API token" style="border:1px solid #000000; width:80%">
 
-4. If you're not using a custom domain, also note your organization label, shown under **Admin** > **Organization settings**. Pass it to the `ardoq:Client` via the `orgLabel` parameter:
-
-   ```ballerina
-   ardoq:Client ardoqClient = check new ({auth: {token: token}}, orgLabel = "<your-org-label>");
-   ```
-
-> **Note:** Pass the token to the `ardoq:Client` via the `auth` configuration when creating it — the connector attaches it as a bearer token in the `Authorization` header of every request automatically.
+4. If you're not using a custom domain, also note your organization label, shown under **Admin** > **Organization settings** — you'll need it in the next section.
 
 ## Quickstart
 
@@ -58,17 +52,23 @@ import ballerinax/ardoq;
 
     ```toml
     token = "<your-ardoq-api-token>"
-    serviceUrl = "https://app.ardoq.com/api/v2"
+    serviceUrl = "https://instance.ardoq.com/api/v2"
     ```
 
 2. Create an `ardoq:Client` instance:
 
     ```ballerina
     configurable string token = ?;
-    configurable string serviceUrl = "https://app.ardoq.com/api/v2";
+    configurable string serviceUrl = "https://instance.ardoq.com/api/v2";
 
     final ardoq:Client ardoqClient = check new ({auth: {token: token}}, serviceUrl = serviceUrl);
     ```
+
+    > **Note:** If you're not using a custom domain, also pass your organization label (shown under **Admin** > **Organization settings**) via the `orgLabel` parameter:
+    >
+    > ```ballerina
+    > final ardoq:Client ardoqClient = check new ({auth: {token: token}}, serviceUrl = serviceUrl, orgLabel = "<your-org-label>");
+    > ```
 
 ### Step 3: Invoke the connector operation
 

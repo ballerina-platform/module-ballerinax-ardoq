@@ -22,7 +22,7 @@ The `ballerinax/ardoq` connector provides practical examples illustrating usage 
 
     ```toml
     token = "<your-ardoq-api-token>"
-    serviceUrl = "https://app.ardoq.com/api/v2"
+    serviceUrl = "https://instance.ardoq.com/api/v2"
     ```
 
 ## Running an example

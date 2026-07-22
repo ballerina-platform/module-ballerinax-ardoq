@@ -13,7 +13,7 @@ This example models an application dependency in Ardoq: it finds a workspace by 
 - Create a `Config.toml` in this directory:
   ```toml
   token = "<your-ardoq-api-token>"
-  serviceUrl = "https://app.ardoq.com/api/v2"
+  serviceUrl = "https://instance.ardoq.com/api/v2"
   workspaceName = "Application Portfolio"
   ```
 
