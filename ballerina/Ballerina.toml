@@ -1,0 +1,13 @@
+[package]
+distribution = "2201.12.0"
+org = "ballerinax"
+name = "ardoq"
+version = "1.0.0"
+license = ["Apache-2.0"]
+authors = ["Ballerina"]
+keywords = ["Name/Ardoq", "Area/ERP & Business Operations", "Vendor/Ardoq", "Cost/Paid", "Type/Connector", "Ardoq", "Enterprise Architecture", "EA"]
+icon = "icon.png"
+repository = "https://github.com/ballerina-platform/module-ballerinax-ardoq"
+
+[build-options]
+observabilityIncluded = true
