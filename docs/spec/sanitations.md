@@ -341,14 +341,13 @@ file to `ballerina/oas_client.bal` and its class to `GeneratedClient`
 attaches the `X-org` header required on the shared `app.ardoq.com` host (see step 51 below)
 and otherwise forwards every operation as-is. It is intentionally **not** regenerated.
 
-53. Add automatic `X-org` header resolution
+53. Add `X-org` header support via an explicit `orgLabel` parameter
 - **Change**: `ballerina/client.bal` is a hand-written wrapper (not generated) around the
-  OpenAPI-generated `GeneratedClient`. It resolves the caller's organization label — via an
-  explicit `orgLabel` parameter, or automatically through one `getMe()` call at
-  initialization when `serviceUrl` points at the shared `app.ardoq.com` host — and attaches
-  it as the `X-org` header on every request.
+  OpenAPI-generated `GeneratedClient`. It accepts an explicit `orgLabel` parameter at
+  initialization and attaches it as the `X-org` header on every request.
 - **Reason**: Per [Ardoq's docs](https://developer.ardoq.com/getting-started/making_a_simple_request/),
   requests to `app.ardoq.com` must carry `X-org` since that host isn't scoped to a single
   organization, unlike a dedicated domain (e.g. `https://your-org.ardoq.com`), where it's
-  optional. See the "Post-generation step" note above for why this lives in a hand-written
-  file rather than a generated one.
+  optional. No auto-discovery is performed — the caller supplies the label directly. See the
+  "Post-generation step" note above for why this lives in a hand-written file rather than a
+  generated one.

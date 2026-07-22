@@ -28,29 +28,13 @@ To use the Ardoq connector, you must have access to an Ardoq organization and an
 
    <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-ardoq/main/docs/setup/resources/generate-token.png alt="Copy the generated API token" style="border:1px solid #000000; width:80%">
 
+4. If you're not using a custom domain, also note your organization label, shown under **Admin** > **Organization settings**. Pass it to the `ardoq:Client` via the `orgLabel` parameter:
+
+   ```ballerina
+   ardoq:Client ardoqClient = check new ({auth: {token: token}}, orgLabel = "<your-org-label>");
+   ```
+
 > **Note:** Pass the token to the `ardoq:Client` via the `auth` configuration when creating it — the connector attaches it as a bearer token in the `Authorization` header of every request automatically.
-
-### Step 3: Handle the organization header (only if not using a custom domain)
-
-If you sign in at `app.ardoq.com` (rather than a dedicated domain like `https://your-org.ardoq.com`), every request must also carry an `X-org` header set to your organization label, since `app.ardoq.com` is shared across organizations. If you're on a dedicated domain, the organization is already implied by the domain itself and no `X-org` header is needed — you can skip this step. See Ardoq's [concepts guide](https://developer.ardoq.com/getting-started/making_a_simple_request/) for more details.
-
-The `ardoq:Client` handles this for you: if `serviceUrl` points at `app.ardoq.com` and you don't pass `orgLabel` explicitly, it resolves your organization label automatically (one extra `getMe()` call at initialization) and attaches `X-org` to every request.
-
-```ballerina
-ardoq:Client ardoqClient = check new ({auth: {token: token}});
-```
-
-To skip that extra lookup, pass the label explicitly — it's shown on the same **Access control** page used to generate the token above:
-
-```ballerina
-ardoq:Client ardoqClient = check new ({auth: {token: token}}, orgLabel = "<your-org-label>");
-```
-
-You can also set `X-org` yourself through the `headers` parameter that every remote operation accepts — it takes precedence over the resolved/auto-discovered value:
-
-```ballerina
-ardoq:PaginatedWorkspaceResponse workspaces = check ardoqClient->listWorkspaces({"X-org": "<your-org-label>"});
-```
 
 ## Quickstart
 

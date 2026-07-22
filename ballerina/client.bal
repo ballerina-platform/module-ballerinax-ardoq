@@ -19,7 +19,7 @@
 # Requests to the shared `app.ardoq.com` host must carry an `X-org` header
 # identifying the organization, since that host (unlike a dedicated domain)
 # is not scoped to a single organization. This client wraps the generated
-# `GeneratedClient` to resolve and attach that header automatically.
+# `GeneratedClient` to attach that header automatically when `orgLabel` is set.
 public isolated client class Client {
     private final GeneratedClient genClient;
     private final string? orgLabel;
@@ -28,19 +28,13 @@ public isolated client class Client {
     #
     # + config - The configurations to be used when initializing the `connector`
     # + serviceUrl - URL of the target service
-    # + orgLabel - The organization label. Required for the shared `app.ardoq.com` host
-    #              (auto-resolves if omitted). Ignored on dedicated domains
+    # + orgLabel - The organization label. Required for the shared `app.ardoq.com` host.
+    #              Ignored on dedicated domains
     # + return - An error if connector initialization failed
     public isolated function init(ConnectionConfig config, string serviceUrl = "https://app.ardoq.com/api/v2",
             string? orgLabel = ()) returns error? {
-        GeneratedClient genClient = check new (config, serviceUrl);
-        string? resolvedOrgLabel = orgLabel;
-        if resolvedOrgLabel is () && serviceUrl.includes("://app.ardoq.com") {
-            UserInfo userInfo = check genClient->getMe();
-            resolvedOrgLabel = userInfo.org?.label;
-        }
-        self.genClient = genClient;
-        self.orgLabel = resolvedOrgLabel;
+        self.genClient = check new (config, serviceUrl);
+        self.orgLabel = orgLabel;
     }
 
     // Adds the X-org header when orgLabel is set, unless the caller already supplied one.
