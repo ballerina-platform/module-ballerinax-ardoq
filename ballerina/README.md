@@ -34,25 +34,23 @@ To use the Ardoq connector, you must have access to an Ardoq organization and an
 
 If you sign in at `app.ardoq.com` (rather than a dedicated domain like `https://your-org.ardoq.com`), every request must also carry an `X-org` header set to your organization label, since `app.ardoq.com` is shared across organizations. If you're on a dedicated domain, the organization is already implied by the domain itself and no `X-org` header is needed — you can skip this step. See Ardoq's [concepts guide](https://developer.ardoq.com/getting-started/making_a_simple_request/) for more details.
 
-The connector offers two ways to handle this:
+The `ardoq:Client` handles this for you: if `serviceUrl` points at `app.ardoq.com` and you don't pass `orgLabel` explicitly, it resolves your organization label automatically (one extra `getMe()` call at initialization) and attaches `X-org` to every request.
 
-- **`ardoq:OrgAwareClient`** (recommended for `app.ardoq.com`) — a drop-in alternative to `ardoq:Client` with the same operations. It resolves your organization label automatically (one extra call to `getMe()` at initialization) and attaches `X-org` to every request for you:
+```ballerina
+ardoq:Client ardoqClient = check new ({auth: {token: token}});
+```
 
-    ```ballerina
-    ardoq:OrgAwareClient ardoqClient = check new ({auth: {token: token}});
-    ```
+To skip that extra lookup, pass the label explicitly — it's shown on the same **Access control** page used to generate the token above:
 
-    To skip that extra lookup, pass the label explicitly — it's shown on the same **Access control** page used to generate the token above:
+```ballerina
+ardoq:Client ardoqClient = check new ({auth: {token: token}}, orgLabel = "<your-org-label>");
+```
 
-    ```ballerina
-    ardoq:OrgAwareClient ardoqClient = check new ({auth: {token: token}}, orgLabel = "<your-org-label>");
-    ```
+You can also set `X-org` yourself through the `headers` parameter that every remote operation accepts — it takes precedence over the resolved/auto-discovered value:
 
-- **`ardoq:Client`** — pass `X-org` yourself through the `headers` parameter that every remote operation accepts:
-
-    ```ballerina
-    ardoq:PaginatedWorkspaceResponse workspaces = check ardoqClient->listWorkspaces({"X-org": "<your-org-label>"});
-    ```
+```ballerina
+ardoq:PaginatedWorkspaceResponse workspaces = check ardoqClient->listWorkspaces({"X-org": "<your-org-label>"});
+```
 
 ## Quickstart
 

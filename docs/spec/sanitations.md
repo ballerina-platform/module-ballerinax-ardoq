@@ -325,17 +325,17 @@ These changes are done in order to improve the overall usability, and as workaro
 The following command generates the raw OpenAPI-derived client. The command should be executed from the repository root directory.
 
 ```bash
-bal openapi -i docs/spec/openapi.json -o ballerina/generated --mode client --license docs/license.txt --client-methods remote
+bal openapi -i docs/spec/openapi.json -o ballerina --mode client --license docs/license.txt --client-methods remote
 ```
 
 Note: The license year is hardcoded to 2026, change if necessary.
 
 ### Post-generation step: rename the generated client class
 
-The generated `client.bal` declares `public isolated client class Client`. Move the three
-generated files to `ballerina/generated_client.bal`, `ballerina/generated_types.bal`, and
-`ballerina/generated_utils.bal`, and rename the generated class to `GeneratedClient`
+The generated `client.bal` declares `public isolated client class Client`. Rename its
+file to `ballerina/oas_client.bal` and its class to `GeneratedClient`
 (`public isolated client class Client {` → `isolated client class GeneratedClient {`).
+`types.bal` and `utils.bal` are generated and used as-is, no renaming needed.
 
 `ballerina/client.bal` is a hand-written wrapper around `GeneratedClient` — it resolves and
 attaches the `X-org` header required on the shared `app.ardoq.com` host (see step 51 below)

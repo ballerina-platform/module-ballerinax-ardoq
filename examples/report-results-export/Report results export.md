@@ -4,7 +4,7 @@ This example exports the results of an Ardoq report: it finds a report by name, 
 
 ## Prerequisites
 
-- Ballerina Swan Lake 2201.x or later
+- Ballerina Swan Lake 2201.13.x or later
 - Push the connector to the local repository:
   ```bash
   cd ballerina

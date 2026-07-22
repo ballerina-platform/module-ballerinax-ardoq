@@ -2,7 +2,7 @@
 org = "ballerinax"
 name = "application_dependency_mapping"
 version = "0.1.0"
-distribution = "2201.13.4"
+distribution = "2201.13.0"
 
 [build-options]
 observabilityIncluded = true
